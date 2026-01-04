@@ -6,5 +6,6 @@ example.clean.js
 demo.js
 example.js
 test.js
+test-output.js
 .git/
 .gitignore
