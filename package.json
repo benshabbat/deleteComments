@@ -4,6 +4,9 @@
   "description": "A lightweight package to efficiently remove all types of comments from JavaScript code",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "delete-js-comments": "./bin/cli.js"
+  },
   "exports": {
     ".": {
       "import": "./index.js",
@@ -12,6 +15,7 @@
   },
   "files": [
     "index.js",
+    "bin/",
     "README.md",
     "LICENSE"
   ],
