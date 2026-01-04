@@ -8,7 +8,14 @@ export default function deleteComments(code) {
     throw new TypeError('Input must be a string');
   }
 
-  let result = '';
+  // Security: Limit input size to prevent DoS attacks (10MB limit)
+  const MAX_INPUT_SIZE = 10 * 1024 * 1024;
+  if (code.length > MAX_INPUT_SIZE) {
+    throw new RangeError('Input size exceeds maximum allowed (' + MAX_INPUT_SIZE + ' characters)');
+  }
+
+  // Security: Use array for better memory performance
+  const result = [];
   let i = 0;
 
   while (i < code.length) {
@@ -18,19 +25,19 @@ export default function deleteComments(code) {
     // Preserve string literals
     if (char === '"' || char === "'" || char === '`') {
       const quote = char;
-      result += char;
+      result.push(char);
       i++;
 
       while (i < code.length) {
         if (code[i] === '\\' && i + 1 < code.length) {
-          result += code[i] + code[i + 1];
+          result.push(code[i], code[i + 1]);
           i += 2;
         } else if (code[i] === quote) {
-          result += code[i];
+          result.push(code[i]);
           i++;
           break;
         } else {
-          result += code[i];
+          result.push(code[i]);
           i++;
         }
       }
@@ -40,8 +47,9 @@ export default function deleteComments(code) {
     // Remove multi-line comments
     if (char === '/' && nextChar === '*') {
       i += 2;
-      while (i < code.length - 1) {
-        if (code[i] === '*' && code[i + 1] === '/') {
+      // Security: Prevent infinite loop on unclosed comments
+      while (i < code.length) {
+        if (i < code.length - 1 && code[i] === '*' && code[i + 1] === '/') {
           i += 2;
           break;
         }
@@ -60,9 +68,9 @@ export default function deleteComments(code) {
     }
 
     // Regular code
-    result += char;
+    result.push(char);
     i++;
   }
 
-  return result;
+  return result.join('');
 }
