@@ -1,10 +1,40 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync, writeFileSync, existsSync, statSync } from 'fs';
+import { resolve, normalize, isAbsolute } from 'path';
 import deleteComments from '../index.js';
 
 const args = process.argv.slice(2);
+
+// Security: Validate file path to prevent path traversal attacks
+function isPathSafe(filePath) {
+  const normalizedPath = normalize(filePath);
+  const resolvedPath = resolve(process.cwd(), normalizedPath);
+  const cwd = process.cwd();
+  
+  // Prevent path traversal outside current working directory
+  if (!resolvedPath.startsWith(cwd)) {
+    return false;
+  }
+  
+  // Block access to sensitive files
+  const sensitivePatterns = [
+    /\.env$/i,
+    /\.git/i,
+    /\.ssh/i,
+    /password/i,
+    /secret/i,
+    /\.key$/i,
+    /\.pem$/i
+  ];
+  
+  return !sensitivePatterns.some(pattern => pattern.test(normalizedPath));
+}
+
+// Security: Validate file extension
+function isJavaScriptFile(filePath) {
+  return /\.m?js$/i.test(filePath);
+}
 
 function showHelp() {
   console.log(`
@@ -73,7 +103,40 @@ let code = '';
 if (inputFile) {
   // Read from file
   try {
+    // Security: Validate file path
+    if (!isPathSafe(inputFile)) {
+      console.error('Error: Access denied - potentially unsafe file path');
+      process.exit(1);
+    }
+    
+    // Security: Validate file extension
+    if (!isJavaScriptFile(inputFile)) {
+      console.error('Error: Only JavaScript files (.js, .mjs) are supported');
+      process.exit(1);
+    }
+    
     const filePath = resolve(process.cwd(), inputFile);
+    
+    // Security: Check if file exists and is readable
+    if (!existsSync(filePath)) {
+      console.error(`Error: File not found: ${inputFile}`);
+      process.exit(1);
+    }
+    
+    // Security: Check if it's a file (not directory or special file)
+    const stats = statSync(filePath);
+    if (!stats.isFile()) {
+      console.error('Error: Path must be a regular file');
+      process.exit(1);
+    }
+    
+    // Security: Check file size (max 10MB as per main module)
+    const maxSize = 10 * 1024 * 1024;
+    if (stats.size > maxSize) {
+      console.error(`Error: File too large (max ${maxSize} bytes)`);
+      process.exit(1);
+    }
+    
     code = readFileSync(filePath, 'utf-8');
   } catch (error) {
     console.error(`Error reading file: ${error.message}`);
@@ -117,14 +180,37 @@ if (inputFile) {
     const cleanCode = deleteComments(code);
 
     if (overwrite) {
+      // Security: Validate output path
+      if (!isPathSafe(inputFile)) {
+        console.error('Error: Access denied - cannot overwrite this file');
+        process.exit(1);
+      }
+      
       // Overwrite input file
       const filePath = resolve(process.cwd(), inputFile);
       writeFileSync(filePath, cleanCode, 'utf-8');
       console.error(`✓ File updated: ${inputFile}`);
     } else if (outputFile) {
+      // Security: Validate output path
+      if (!isPathSafe(outputFile)) {
+        console.error('Error: Access denied - unsafe output path');
+        process.exit(1);
+      }
+      
+      // Security: Validate output file extension
+      if (!isJavaScriptFile(outputFile)) {
+        console.error('Error: Output must be a JavaScript file (.js, .mjs)');
+        process.exit(1);
+      }
+      
+      // Security: Warn if overwriting existing file
+      const outputPath = resolve(process.cwd(), outputFile);
+      if (existsSync(outputPath)) {
+        console.error(`Warning: Overwriting existing file: ${outputFile}`);
+      }
+      
       // Write to output file
-      const filePath = resolve(process.cwd(), outputFile);
-      writeFileSync(filePath, cleanCode, 'utf-8');
+      writeFileSync(outputPath, cleanCode, 'utf-8');
       console.error(`✓ Output written to: ${outputFile}`);
     } else {
       // Output to stdout
