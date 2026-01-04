@@ -1,2 +1,7 @@
 ﻿
-const x = 1;
+const message = 'Hello World';
+
+
+function test() {
+  return message; 
+}
