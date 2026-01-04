@@ -1,0 +1,10 @@
+# Files to exclude from npm package
+node_modules/
+*.log
+.DS_Store
+example.clean.js
+demo.js
+example.js
+test.js
+.git/
+.gitignore
