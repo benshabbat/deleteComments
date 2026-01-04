@@ -12,20 +12,50 @@ function isPathSafe(filePath) {
   const resolvedPath = resolve(process.cwd(), normalizedPath);
   const cwd = process.cwd();
   
-  // Prevent path traversal outside current working directory
-  if (!resolvedPath.startsWith(cwd)) {
+  // Prevent absolute paths (Windows and Unix)
+  if (isAbsolute(filePath)) {
     return false;
   }
   
-  // Block access to sensitive files
+  // Prevent UNC paths on Windows
+  if (filePath.startsWith('\\\\') || filePath.startsWith('//')) {
+    return false;
+  }
+  
+  // Prevent path traversal outside current working directory
+  // Use platform-agnostic comparison
+  const cwdNormalized = normalize(cwd);
+  const resolvedNormalized = normalize(resolvedPath);
+  
+  if (!resolvedNormalized.toLowerCase().startsWith(cwdNormalized.toLowerCase())) {
+    return false;
+  }
+  
+  // Block access to sensitive files and patterns
   const sensitivePatterns = [
     /\.env$/i,
     /\.git/i,
     /\.ssh/i,
     /password/i,
     /secret/i,
+    /credential/i,
     /\.key$/i,
-    /\.pem$/i
+    /\.pem$/i,
+    /\.p12$/i,
+    /\.pfx$/i,
+    /\.cer$/i,
+    /\.crt$/i,
+    /package-lock\.json$/i,
+    /yarn\.lock$/i,
+    /pnpm-lock\.yaml$/i,
+    /\.npmrc$/i,
+    /\.yarnrc$/i,
+    /node_modules/i,
+    /\.exe$/i,
+    /\.dll$/i,
+    /\.so$/i,
+    /\.dylib$/i,
+    /config\.json$/i
   ];
   
   return !sensitivePatterns.some(pattern => pattern.test(normalizedPath));
@@ -33,7 +63,7 @@ function isPathSafe(filePath) {
 
 // Security: Validate file extension
 function isJavaScriptFile(filePath) {
-  return /\.m?js$/i.test(filePath);
+  return /\.(js|mjs|cjs|jsx)$/i.test(filePath);
 }
 
 function showHelp() {
@@ -87,6 +117,11 @@ for (let i = 0; i < args.length; i++) {
   const arg = args[i];
   
   if (arg === '-o' || arg === '--output') {
+    // Security: Validate that next argument exists
+    if (i + 1 >= args.length) {
+      console.error('Error: --output requires a file path argument');
+      process.exit(1);
+    }
     outputFile = args[++i];
   } else if (arg === '--overwrite') {
     overwrite = true;
@@ -151,9 +186,20 @@ if (inputFile) {
   }
 
   const chunks = [];
+  const maxSize = 10 * 1024 * 1024; // 10MB limit
+  let totalSize = 0;
+  
   process.stdin.setEncoding('utf-8');
   
   process.stdin.on('data', chunk => {
+    totalSize += chunk.length;
+    
+    // Security: Prevent memory exhaustion from large stdin
+    if (totalSize > maxSize) {
+      console.error(`Error: Input exceeds maximum size (${maxSize} bytes)`);
+      process.exit(1);
+    }
+    
     chunks.push(chunk);
   });
 

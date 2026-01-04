@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2026-01-04
+
+### Security (Critical Updates)
+- **Enhanced Path Traversal Protection**:
+  - Added absolute path blocking (Windows and Unix)
+  - Added UNC path blocking for Windows network shares
+  - Implemented case-insensitive path validation for cross-platform security
+  - Enhanced directory traversal prevention with normalized path comparison
+- **Extended Sensitive File Blocking**:
+  - Added certificate files (.p12, .pfx, .cer, .crt)
+  - Added lock files (package-lock.json, yarn.lock, pnpm-lock.yaml)
+  - Added config files (.npmrc, .yarnrc, config.json)
+  - Added credential pattern matching
+  - Added binary file blocking (.exe, .dll, .so, .dylib)
+  - Added node_modules protection
+- **STDIN Security**: Added 10MB size limit for piped input to prevent memory exhaustion attacks
+- **Argument Validation**: Added validation for missing required arguments (e.g., -o flag)
+- **Extended File Type Support**: Added .cjs and .jsx to supported extensions
+
+### Fixed
+- Fixed emoji encoding issues in CLI output messages (replaced with plain ASCII)
+- Fixed potential argument injection vulnerability with -o flag
+
+### Changed
+- Updated security documentation with comprehensive examples and test cases
+- Improved error messages for better clarity without exposing sensitive information
+
+## [1.1.3] - 2026-01-04
+
+### Fixed
+- Removed emoji characters from README for better npm website display compatibility
+- Fixed README rendering issues on npmjs.com
+
+### Changed
+- Converted all documentation to ASCII-only for maximum compatibility
+
 ## [1.1.2] - 2026-01-04
 
 ### Security
