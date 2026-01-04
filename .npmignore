@@ -7,5 +7,7 @@ demo.js
 example.js
 test.js
 test-output.js
+security-tests.ps1
+SECURITY-AUDIT.md
 .git/
 .gitignore
