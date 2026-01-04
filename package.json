@@ -1,0 +1,23 @@
+{
+  "name": "delete-js-comments",
+  "version": "1.0.0",
+  "description": "A package to remove comments from JavaScript code",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "javascript",
+    "comments",
+    "remove",
+    "delete",
+    "clean",
+    "code"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benshabbat/deleteComments.git"
+  }
+}
