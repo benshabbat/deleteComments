@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "delete-js-comments": "./bin/cli.js"
+    "delete-js-comments": "bin/cli.js"
   },
   "exports": {
     ".": {
