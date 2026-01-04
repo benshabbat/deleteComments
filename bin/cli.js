@@ -189,7 +189,7 @@ if (inputFile) {
       // Overwrite input file
       const filePath = resolve(process.cwd(), inputFile);
       writeFileSync(filePath, cleanCode, 'utf-8');
-      console.error(`✓ File updated: ${inputFile}`);
+      console.error(`Success: File updated: ${inputFile}`);
     } else if (outputFile) {
       // Security: Validate output path
       if (!isPathSafe(outputFile)) {
@@ -211,7 +211,7 @@ if (inputFile) {
       
       // Write to output file
       writeFileSync(outputPath, cleanCode, 'utf-8');
-      console.error(`✓ Output written to: ${outputFile}`);
+      console.error(`Success: Output written to: ${outputFile}`);
     } else {
       // Output to stdout
       console.log(cleanCode);
