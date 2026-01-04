@@ -1,6 +1,5 @@
-const deleteComments = require('./index.js');
+import deleteComments from './index.js';
 
-// Test cases
 console.log('Testing delete-js-comments package...\n');
 
 // Test 1: Single-line comments

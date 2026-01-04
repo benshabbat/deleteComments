@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A package to remove comments from JavaScript code",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "node test.js"
   },
